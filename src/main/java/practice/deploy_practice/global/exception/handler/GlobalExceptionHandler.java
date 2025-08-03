@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import practice.deploy_practice.global.exception.errorcode.ErrorCode;
 import practice.deploy_practice.global.exception.errorcode.GlobalErrorCode;
 import practice.deploy_practice.global.exception.response.ErrorResponse;
+import practice.deploy_practice.test.exception.TestException;
 
 import java.util.List;
 
@@ -31,12 +32,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * handleMemberNotFound(final UserNotFoundException e) { return
      * handleExceptionInternal(e.getErrorCode()); }
      */
-//    @ExceptionHandler(TestExcpetion.class)
-//    public ResponseEntity<Object> handleAuthException(
-//            final TestExcpetion e, HttpServletRequest request) {
-//        logInfo(e.getErrorCode(), e, request);
-//        return handleExceptionInternal(e.getErrorCode());
-//    }
+    @ExceptionHandler(TestException.class)
+    public ResponseEntity<Object> handleTestException(
+            final TestException e, HttpServletRequest request) {
+        logInfo(e.getErrorCode(), e, request);
+        return handleExceptionInternal(e.getErrorCode());
+    }
 
     /**
      * @Valid 관련 예외 처리 (DTO 검증 실패 시 발생)
