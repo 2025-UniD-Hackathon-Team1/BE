@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  db: #MySQL
+    image: mysql:8.0
+    restart: always
+    container_name: practice-mysql
+    ports:
+      - "43306:3306"
+    environment:
+      MYSQL_DATABASE: practice
+      MYSQL_ROOT_PASSWORD: ${DOCKER_DB_PASS}
+      TZ: Asia/Seoul
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - practice-net
+
+volumes:
+  mysql_data:
+
+networks:
+  practice-net:
