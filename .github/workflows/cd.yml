@@ -1,0 +1,49 @@
+name: 🚀 CD - Deploy to EC2 (Blue/Green)
+
+on:
+  # CI 워크플로우가 끝났을 때 자동 실행
+  workflow_run:
+    workflows: ["🧪 CI - Build & Push Docker Image"]
+    types: [completed]
+
+jobs:
+  deploy:
+    # CI가 성공했을 때만 배포
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: 🧮 Pick image tag from CI run
+        id: pick
+        run: |
+          echo "tag=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          echo "Picked tag: ${{ github.event.workflow_run.head_sha }}"
+
+      - name: ✈️ SSH to EC2 & run deploy.sh
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            cd /srv/app
+            
+            if [ ! -d "deploy-practice" ]; then
+              echo "📦 Cloning repo first time..."
+              git clone https://github.com/${{ github.repository }} deploy-practice
+            fi
+            
+            cd deploy-practice
+            git fetch --all
+            git reset --hard origin/develop
+            
+            chmod +x infra/deploy.sh
+            
+            IMAGE="docker.io/${{ secrets.DOCKER_USERNAME }}/practice"
+            TAG="${{ steps.pick.outputs.tag }}"
+            
+            echo "🚀 Deploying $IMAGE:$TAG ..."
+            ./infra/deploy.sh "$IMAGE" "$TAG" --no-health
