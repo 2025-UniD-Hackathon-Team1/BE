@@ -31,19 +31,22 @@ jobs:
             set -e
             cd /srv/app
             
+            # 최초 클론 
             if [ ! -d "deploy-practice" ]; then
               echo "📦 Cloning repo first time..."
               git clone https://github.com/${{ github.repository }} deploy-practice
             fi
             
+            # 최신 코드 반영
             cd deploy-practice
             git fetch --all
             git reset --hard origin/develop
             
+            # 실행 권한 
             chmod +x infra/deploy.sh
             
+            # 배포 실행 
             IMAGE="docker.io/${{ secrets.DOCKER_USERNAME }}/practice"
             TAG="${{ steps.pick.outputs.tag }}"
-            
             echo "🚀 Deploying $IMAGE:$TAG ..."
             ./infra/deploy.sh "$IMAGE" "$TAG" --no-health
