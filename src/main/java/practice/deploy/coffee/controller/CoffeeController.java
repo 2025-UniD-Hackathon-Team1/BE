@@ -21,7 +21,7 @@ public class CoffeeController {
 
     private final CoffeeService coffeeService;
 
-    @Operation(summary = "하루 커피 등록 API", description = "로그인 후에 진행해주세요.")
+    @Operation(summary = "하루 커피 등록 API", description = "로그인 후에 진행해주세요. 시간은 11:30 와 같이 입력해주세요. Strig입니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<Object>> registerCoffee(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody CoffeeRequest request) {
         coffeeService.addCoffee(userDetails.getId(), request);
