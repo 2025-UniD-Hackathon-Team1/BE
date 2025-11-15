@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import practice.deploy.coffee.dto.request.CoffeeRequest;
+import practice.deploy.coffee.dto.response.AlertnessResponse;
 import practice.deploy.coffee.dto.response.CoffeeListResponse;
 import practice.deploy.coffee.dto.response.CaffeineConcentrationResponse;
 import practice.deploy.coffee.service.CoffeeService;
@@ -47,6 +48,15 @@ public class CoffeeController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(value = "currentTime") LocalDateTime currentTime) {
         CaffeineConcentrationResponse response = coffeeService.getCaffeineConcentration(userDetails.getId(), currentTime);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.from(response));
+    }
+
+    @Operation(summary = "각성도 조회 API", description = "로그인 후에 진행해주세요. 현재 시간을 입력하여 현재 각성도와 각성 종료 시간을 조회합니다.")
+    @GetMapping("/alertness")
+    public ResponseEntity<ApiResponse<Object>> getAlertness(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "currentTime") LocalDateTime currentTime) {
+        AlertnessResponse response = coffeeService.getAlertness(userDetails.getId(), currentTime);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.from(response));
     }
 }

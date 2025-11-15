@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import practice.deploy.coffee.domain.Coffee;
 import practice.deploy.coffee.dto.request.CoffeeRequest;
+import practice.deploy.coffee.dto.response.AlertnessResponse;
 import practice.deploy.coffee.dto.response.CaffeineConcentrationResponse;
 import practice.deploy.coffee.dto.response.CoffeeItemResponse;
 import practice.deploy.coffee.dto.response.CoffeeListResponse;
@@ -52,7 +53,7 @@ public class CoffeeService {
 
     @Transactional(readOnly = true)
     public CoffeeListResponse getCoffeeList(LocalDate drinkDate, Long userId){
-        User user = findUserOrThrow(userId);
+        findUserOrThrow(userId);
 
         List<Coffee> coffeeList = coffeeRepository.findAllByUserIdAndDrinkDate(userId, drinkDate);
         List<CoffeeItemResponse> coffeeResponseList = coffeeList.stream()
@@ -144,6 +145,125 @@ public class CoffeeService {
         }
 
         return total;
+    }
+
+    /* --------------------------- Alertness Service --------------------------- */
+    @Transactional(readOnly = true)
+    public AlertnessResponse getAlertness(Long userId, LocalDateTime currentTime) {
+        User user = findUserOrThrow(userId);
+        
+        // 오늘 날짜 조회
+        LocalDate today = currentTime.toLocalDate();
+        List<Coffee> coffeeList = coffeeRepository.findAllByUserIdAndDrinkDate(userId, today);
+        
+        if (coffeeList.isEmpty()) {
+            return new AlertnessResponse(0.1, null); // baseline 각성도
+        }
+        
+        // 사용자 나이
+        int age = user.getAge() != null ? user.getAge().intValue() : 30;
+        double tHalf = CaffeineModel.estimateTHalf(age, "normal");
+        double weight = 70.0; // 기본 체중
+        
+        // 혈중 농도로 변환 (concentrationWithAbsorption 사용)
+        double currentConcentration = 0.0;
+        
+        // 모든 음료의 혈중 농도를 합산
+        for (Coffee coffee : coffeeList) {
+            LocalDateTime drinkDateTime = LocalDateTime.of(coffee.getDrinkDate(), coffee.getDrinkTime());
+            if (drinkDateTime.isAfter(currentTime)) {
+                continue;
+            }
+            double hoursElapsed = calculateHoursBetween(drinkDateTime, currentTime);
+            if (hoursElapsed >= 0) {
+                double concentration = CaffeineModel.concentrationWithAbsorption(
+                        hoursElapsed,
+                        coffee.getCaffeineAmount().doubleValue(),
+                        weight,
+                        tHalf
+                );
+                currentConcentration += concentration;
+            }
+        }
+        
+        // 내성 계산을 위한 주간 섭취량 계산 (feedback 데이터 활용)
+        int weekNumber = calculateWeekNumber(userId, today);
+        
+        // 현재 각성도 계산
+        double currentAlertness = CaffeineModel.caffeineEffect(currentConcentration, age, weekNumber, "alertness");
+        
+        // 각성 종료 시간 계산 (각성도가 baseline(0.1) 이하로 떨어지는 시점)
+        LocalDateTime alertnessEndTime = calculateAlertnessEndTime(
+                coffeeList, currentTime, age, weekNumber, tHalf, weight
+        );
+        
+        return new AlertnessResponse(
+                Math.round(currentAlertness * 100.0) / 100.0,
+                alertnessEndTime
+        );
+    }
+    
+    private int calculateWeekNumber(Long userId, LocalDate today) {
+        // 최근 7일간의 coffee 섭취 횟수 계산
+        int coffeeCount = 0;
+        for (int i = 0; i < 7; i++) {
+            LocalDate date = today.minusDays(i);
+            List<Coffee> dailyCoffee = coffeeRepository.findAllByUserIdAndDrinkDate(userId, date);
+            coffeeCount += dailyCoffee.size();
+        }
+        
+        // 주간 섭취 횟수에 따라 weekNumber 결정
+        if (coffeeCount >= 14) { // 하루 평균 2회 이상
+            return 7;
+        } else if (coffeeCount >= 7) { // 하루 평균 1회 이상
+            return 4;
+        } else if (coffeeCount >= 2) { // 주간 2회 이상
+            return 2;
+        } else {
+            return 0;
+        }
+    }
+    
+    private LocalDateTime calculateAlertnessEndTime(List<Coffee> coffeeList, LocalDateTime currentTime,
+                                                    int age, int weekNumber, double tHalf, double weight) {
+        // 각성도가 baseline(0.15) 이하로 떨어지는 시점을 찾음
+        LocalDateTime checkTime = currentTime;
+        double baseline = 0.15;
+        
+        // 최대 24시간 후까지 확인
+        for (int hour = 0; hour < 24; hour++) {
+            checkTime = checkTime.plusHours(1);
+            
+            // 해당 시점의 혈중 농도 계산
+            double concentration = 0.0;
+            for (Coffee coffee : coffeeList) {
+                LocalDateTime drinkDateTime = LocalDateTime.of(coffee.getDrinkDate(), coffee.getDrinkTime());
+                if (drinkDateTime.isAfter(checkTime)) {
+                    continue;
+                }
+                double hoursElapsed = calculateHoursBetween(drinkDateTime, checkTime);
+                if (hoursElapsed >= 0) {
+                    double conc = CaffeineModel.concentrationWithAbsorption(
+                            hoursElapsed,
+                            coffee.getCaffeineAmount().doubleValue(),
+                            weight,
+                            tHalf
+                    );
+                    concentration += conc;
+                }
+            }
+            
+            // 각성도 계산
+            double alertness = CaffeineModel.caffeineEffect(concentration, age, weekNumber, "alertness");
+            
+            // baseline 이하로 떨어지면 종료 시간 반환
+            if (alertness <= baseline) {
+                return checkTime;
+            }
+        }
+        
+        // 24시간 내에 baseline 이하로 떨어지지 않으면 null 반환
+        return null;
     }
 
     private double calculateHoursBetween(LocalDateTime start, LocalDateTime end) {
