@@ -14,6 +14,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import practice.deploy.auth.filter.JwtAuthFilter;
 import practice.deploy.auth.util.JwtTokenProvider;
+import practice.deploy.global.exception.handler.CustomAccessDeniedHandler;
+import practice.deploy.global.exception.handler.CustomAuthenticationEntryPoint;
 
 import java.util.Arrays;
 
@@ -23,6 +25,8 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,6 +34,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 비활성화
+                .exceptionHandling(
+                        exception ->
+                                exception
+                                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                                        .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(
                         authorize ->
                                 authorize
