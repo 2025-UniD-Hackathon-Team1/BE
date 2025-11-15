@@ -32,6 +32,6 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            IMAGE="docker.io/${{ secrets.DOCKER_USERNAME }}/practice"
+            IMAGE="docker.io/${{ secrets.DOCKER_USERNAME }}/coffee-princess"
             TAG="${{ steps.pick.outputs.tag }}"
             bash /home/ubuntu/app/deploy.sh "$IMAGE" "$TAG"

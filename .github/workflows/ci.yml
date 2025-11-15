@@ -35,5 +35,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/practice:latest
-            ${{ secrets.DOCKER_USERNAME }}/practice:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/coffee-princess:latest
+            ${{ secrets.DOCKER_USERNAME }}/coffee-princess:${{ github.sha }}
