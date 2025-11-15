@@ -34,4 +34,4 @@ jobs:
           script: |
             IMAGE="docker.io/${{ secrets.DOCKER_USERNAME }}/coffee-princess"
             TAG="${{ steps.pick.outputs.tag }}"
-            bash /home/ubuntu/app/deploy.sh "$IMAGE" "$TAG"
+            bash /home/ec2-user/apps/deploy.sh "$IMAGE" "$TAG"
