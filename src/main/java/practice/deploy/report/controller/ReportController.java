@@ -24,7 +24,7 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    @Operation(summary = "리포트 제공 API", description = "로그인을 먼저 해주세요. 오늘 날짜를 입력해주세요.")
+    @Operation(summary = "리포트 제공 중 최소 수면 시간 제공 API", description = "로그인을 먼저 해주세요. 오늘 날짜를 입력해주세요.")
     @PostMapping
     public ResponseEntity<ReportResponse> getReport(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                     @RequestBody ReportRequest request) {
