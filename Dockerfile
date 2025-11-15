@@ -1,5 +1,5 @@
 # OpenJDK 17 기반
-FROM openjdk:17
+FROM openjdk:17.0.2
 
 # 작업 디렉토리 설정
 WORKDIR /app
