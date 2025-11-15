@@ -9,14 +9,14 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import practice.deploy.coffee.dto.request.CoffeeRequest;
-import practice.deploy.coffee.dto.response.CoffeeItemResponse;
 import practice.deploy.coffee.dto.response.CoffeeListResponse;
+import practice.deploy.coffee.dto.response.CaffeineConcentrationResponse;
 import practice.deploy.coffee.service.CoffeeService;
 import practice.deploy.global.response.ApiResponse;
 import practice.deploy.user.utils.CustomUserDetails;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,6 +38,15 @@ public class CoffeeController {
     public ResponseEntity<ApiResponse<Object>> getCoffeeList(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                              @RequestParam(value="date") LocalDate drinkDate) {
         CoffeeListResponse response = coffeeService.getCoffeeList(drinkDate, userDetails.getId());
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.from(response));
+    }
+
+    @Operation(summary = "카페인 농도 조회 API", description = "로그인 후에 진행해주세요. 현재 시간을 입력하여 현재 카페인 농도와 시간대별 카페인 농도를 조회합니다.")
+    @GetMapping("/caffeine")
+    public ResponseEntity<ApiResponse<Object>> getCaffeineConcentration(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(value = "currentTime") LocalDateTime currentTime) {
+        CaffeineConcentrationResponse response = coffeeService.getCaffeineConcentration(userDetails.getId(), currentTime);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.from(response));
     }
 }
