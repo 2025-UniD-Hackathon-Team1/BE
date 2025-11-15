@@ -4,9 +4,13 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import practice.deploy.coffee.domain.Coffee;
 import practice.deploy.global.entity.BaseEntity;
 import practice.deploy.user.domain.type.Gender;
 import practice.deploy.user.domain.type.Role;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "users")
 @Entity
@@ -18,6 +22,9 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Coffee> coffeeList = new ArrayList<>();
 
     @Column(name = "username", nullable = false)
     private String username;
