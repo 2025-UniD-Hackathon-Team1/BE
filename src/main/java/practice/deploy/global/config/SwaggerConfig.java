@@ -16,10 +16,10 @@ public class SwaggerConfig {
                 .components(new Components())
                 .info(
                         new Info()
-                                .title("Practice REST API")
-                                .description("Practice Backend Team")
+                                .title("CoffeePrincess REST API")
+                                .description("CoffeePrincess Backend Team")
                                 .contact(
-                                        new Contact().name("Practice BE Github").url("https://github.com/erika0915/deploy-practice.git"))
+                                        new Contact().name("CoffeePrincess BE Github").url("https://github.com/2025-UniD-Hackathon-Team1/BE.git"))
                                 .version("1.0.0"));
     }
 }
