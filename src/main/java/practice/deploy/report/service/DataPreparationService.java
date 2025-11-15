@@ -22,9 +22,7 @@ public class DataPreparationService {
 
     private final CoffeeRepository coffeeRepository;
     private final FeedbackRepository feedbackRepository;
-    // 심장 박동수 척도 (1-5) 중 '두근거림이 있음'으로 판단할 임계값 (4 이상일 때 Y로 판단)
     private static final long PALPITATION_THRESHOLD = 4L;
-
 
     /**
      * 특정 사용자(User)의 기간별 커피 기록과 수면 피드백을 통합하여 LLM 분석용 로그를 생성합니다.
@@ -35,43 +33,32 @@ public class DataPreparationService {
      */
     public List<DailyCaffeineLog> prepareMonthlyData(User user, LocalDate startDate, LocalDate endDate) {
 
-        // 1. DB에서 기간별 데이터 로드
         List<Coffee> coffeeLogs = coffeeRepository.findByUserAndDrinkDateBetweenOrderByDrinkDateAscDrinkTimeAsc(user, startDate, endDate);
         List<Feedback> feedbackLogs = feedbackRepository.findByUserAndSleepDateBetweenOrderBySleepDateAsc(user, startDate, endDate);
 
-        // 2. 커피 로그를 날짜별로 그룹화
         Map<LocalDate, List<Coffee>> coffeeByDate = coffeeLogs.stream()
                 .collect(Collectors.groupingBy(Coffee::getDrinkDate));
 
-        // 3. 피드백 로그를 날짜별로 Map으로 변환 (빠른 조회를 위함)
         Map<LocalDate, Feedback> feedbackByDate = feedbackLogs.stream()
                 .collect(Collectors.toMap(Feedback::getSleepDate, f -> f));
 
-        // 4. 피드백 날짜를 기준으로 통합 및 분석 로그 생성
         return feedbackByDate.entrySet().stream()
-                // 해당 날짜에 커피 기록이 있는 경우에만 처리 (데이터 무결성 확보)
                 .filter(entry -> coffeeByDate.containsKey(entry.getKey()))
                 .map(entry -> {
                     LocalDate date = entry.getKey();
                     Feedback feedback = entry.getValue();
                     List<Coffee> dayCoffees = coffeeByDate.get(date);
 
-                    // 해당 날짜의 커피 기록이 비어있을 경우 (위 filter에서 걸러지지만 안전을 위해 체크)
                     if (dayCoffees.isEmpty()) return null;
 
-                    // A. 하루 총 카페인 섭취량
                     long totalCaffeine = dayCoffees.stream().mapToLong(Coffee::getCaffeineAmount).sum();
 
-                    // B. 마지막 섭취 시간 (리스트의 마지막 요소)
                     LocalTime lastDrinkTime = dayCoffees.get(dayCoffees.size() - 1).getDrinkTime();
 
-                    // C. 심장 두근거림 여부 판단 (임계값 4 이상일 경우 true)
                     boolean hasPalpitation = feedback.getHeartRate() >= PALPITATION_THRESHOLD;
 
-                    // D. 섭취-취침 간격 (시간) 계산
                     double intervalHours = calculateInterval(lastDrinkTime, feedback.getSleepTime());
 
-                    // 최종 로그 생성
                     return new DailyCaffeineLog(
                             date, totalCaffeine, lastDrinkTime, feedback.getSleepTime(), intervalHours, hasPalpitation
                     );

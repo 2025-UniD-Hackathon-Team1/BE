@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import practice.deploy.report.dto.DailyCaffeineLog;
 import practice.deploy.report.dto.response.ReportResponse;
+import practice.deploy.report.util.UpstageApiService;
 import practice.deploy.user.domain.User;
 import practice.deploy.user.exception.UserException;
 import practice.deploy.user.repository.UserRepository;
@@ -46,7 +47,7 @@ public class ReportService {
                         log.hasPalpitation() ? "Y" : "N"))
                 .collect(Collectors.joining("\n"));
 
-        // 최종 프롬프트 (데이터 + 명확한 분석 지시)
+        // 최종 프롬프트
         String prompt = "당신은 수면 과학 전문가입니다. 다음 데이터를 분석하여 **수면을 방해하지 않는 최소 안전 섭취 간격**을 소수점 한 자리(X.X시간)로 계산하세요.\n"
                 + "심장 두근거림(Y)이 발생하지 않은 날들 중, 총 섭취량이 높았던 사례를 기준으로 보수적인 간격을 선택해야 합니다.\n\n"
                 + "--- 데이터 ---\n"

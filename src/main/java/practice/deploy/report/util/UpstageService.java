@@ -1,11 +1,11 @@
-package practice.deploy.report.service;
+package practice.deploy.report.util;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import jakarta.annotation.PostConstruct;
-import practice.deploy.report.dto.request.UpstageMessage;
-import practice.deploy.report.dto.request.UpstageRequest;
-import practice.deploy.report.dto.response.UpstageResponse;
+import practice.deploy.report.dto.upstage.UpstageMessage;
+import practice.deploy.report.dto.upstage.UpstageRequest;
+import practice.deploy.report.dto.upstage.UpstageResponse;
 import reactor.core.publisher.Mono;
 
 import java.util.List;

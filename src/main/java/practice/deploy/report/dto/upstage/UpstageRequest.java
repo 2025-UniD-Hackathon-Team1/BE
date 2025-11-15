@@ -1,4 +1,4 @@
-package practice.deploy.report.dto.request;
+package practice.deploy.report.dto.upstage;
 
 import java.util.List;
 
