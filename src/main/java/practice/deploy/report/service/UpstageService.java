@@ -15,7 +15,6 @@ public class UpstageService {
 
     private final WebClient webClient;
 
-    // WebClientConfig에서 등록한 upstageWebClient Bean을 주입받습니다.
     public UpstageService(WebClient upstageWebClient) {
         this.webClient = upstageWebClient;
     }
