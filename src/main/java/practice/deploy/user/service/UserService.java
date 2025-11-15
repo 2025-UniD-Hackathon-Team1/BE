@@ -24,16 +24,11 @@ public class UserService {
         User user = findUserOrThrow(userId);
 
         LocalTime sleepTime = LocalTime.parse(request.sleepTime());
-        LocalTime wakeupTime = LocalTime.parse(request.wakeupTime());
 
         user.insertUserInfo(
                 request.gender(),
                 request.age(),
-                sleepTime,
-                wakeupTime,
-                request.importantPeriod(),
-                request.experience(),
-                request.sensitivityLevel()
+                sleepTime
                 );
     }
 

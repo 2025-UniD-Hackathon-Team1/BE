@@ -42,20 +42,6 @@ public class User extends BaseEntity {
     @Column(name = "sleep_time")
     private LocalTime sleepTime;
 
-    @Column(name = "wakeup_time")
-    private LocalTime wakeupTime;
-
-    @Column(name = "important_period")
-    @Enumerated(EnumType.STRING)
-    private ImportantPeriod importantPeriod;
-
-    @Column(name = "experience")
-    @Enumerated(EnumType.STRING)
-    private Experience experience;
-
-    @Column(name = "sensitivity_level")
-    private Long sensitivityLevel;
-
     @Builder(builderMethodName = "basicLoginBuilder", buildMethodName = "buildBasicLogin")
     public User(String username, String password) {
         this.username = username;
@@ -63,13 +49,9 @@ public class User extends BaseEntity {
         this.role = Role.ROLE_USER;
     }
 
-    public void insertUserInfo(Gender gender, Long age, LocalTime sleepTime, LocalTime wakeupTime, ImportantPeriod importantPeriod, Experience experience, Long sensitivityLevel) {
+    public void insertUserInfo(Gender gender, Long age, LocalTime sleepTime) {
         this.gender = gender;
         this.age = age;
         this.sleepTime = sleepTime;
-        this.wakeupTime = wakeupTime;
-        this.importantPeriod = importantPeriod;
-        this.experience = experience;
-        this.sensitivityLevel = sensitivityLevel;
     }
 }

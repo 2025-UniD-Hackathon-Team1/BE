@@ -25,8 +25,7 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "유저 관련 정보 입력 API", description = "로그인 후에 진행해주세요. 성별에는 `MALE` 또는 `FEMALE` 을 입력해주세요." +
-            "sleepTime과 wakeupTime은 11:30, 07:30 와 같이 String으로 보내주세요. importantPeriod은 `MORNING`, `LUNCH`, `EVENING` 으로 입력해주세요." +
-            "experience는 `FREQUENTLY` ,`SOMETIMES` , `RARELY` ,`NEVER` 중 하나를 선택해서 보내주세요")
+            "sleepTime과 wakeupTime은 11:30, 07:30 와 같이 String으로 보내주세요.")
     @PostMapping
     public ResponseEntity<ApiResponse<Object>> createUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @Valid @RequestBody CreateUserInfoRequest request) {
         userService.createUserInfo(userDetails.getId(),request);
