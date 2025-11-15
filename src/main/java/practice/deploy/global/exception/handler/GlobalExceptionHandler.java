@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import practice.deploy.auth.exception.AuthException;
+import practice.deploy.coffee.exception.CoffeeException;
 import practice.deploy.global.exception.errorcode.ErrorCode;
 import practice.deploy.global.exception.errorcode.GlobalErrorCode;
 import practice.deploy.global.exception.response.ErrorResponse;
+import practice.deploy.schedule.exception.ScheduleException;
 import practice.deploy.user.exception.UserException;
 
 import java.util.List;
@@ -43,6 +45,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<Object> handleAuthException(
             final AuthException e, HttpServletRequest request) {
+        logInfo(e.getErrorCode(), e, request);
+        return handleExceptionInternal(e.getErrorCode());
+    }
+
+    @ExceptionHandler(CoffeeException.class)
+    public ResponseEntity<Object> handleCoffeeException(
+            final CoffeeException e, HttpServletRequest request) {
+        logInfo(e.getErrorCode(), e, request);
+        return handleExceptionInternal(e.getErrorCode());
+    }
+
+    @ExceptionHandler(ScheduleException.class)
+    public ResponseEntity<Object> handleScheduleException(
+            final ScheduleException e, HttpServletRequest request) {
         logInfo(e.getErrorCode(), e, request);
         return handleExceptionInternal(e.getErrorCode());
     }
