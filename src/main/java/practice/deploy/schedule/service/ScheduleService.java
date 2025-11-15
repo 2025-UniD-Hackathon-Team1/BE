@@ -1,13 +1,24 @@
 package practice.deploy.schedule.service;
 
-import practice.deploy.schedule.dto.ScheduleCreateRequest;
-import practice.deploy.schedule.dto.ScheduleUpdateRequest;
+import org.springframework.transaction.annotation.Transactional;
+import practice.deploy.schedule.dto.request.ScheduleCreateRequest;
+import practice.deploy.schedule.dto.response.ScheduleItemResponse;
+import practice.deploy.schedule.dto.response.ScheduleListResponse;
 import practice.deploy.schedule.entity.Schedule;
 import practice.deploy.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import practice.deploy.user.domain.User;
+import practice.deploy.user.exception.UserException;
+import practice.deploy.user.repository.UserRepository;
+import practice.deploy.user.service.UserService;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
-import practice.deploy.schedule.repository.ScheduleRepository;
+import java.util.stream.Collectors;
+
+import static practice.deploy.user.exception.errorcode.UserErrorCode.USER_NOT_FOUND;
 
 
 @Service
@@ -15,38 +26,37 @@ import practice.deploy.schedule.repository.ScheduleRepository;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
 
-    // 일정 생성
-    public Schedule create(ScheduleCreateRequest request) {
+    @Transactional
+    public void createSchedule(Long userId, ScheduleCreateRequest request) {
+
+        User user = findUserOrThrow(userId);
+        LocalTime time = LocalTime.parse(request.time());
+
         Schedule schedule = Schedule.builder()
-                .date(request.getDate())
-                .time(request.getTime())
-                .name(request.getName())
-                .userId(request.getUserId())
+                .name(request.name())
+                .time(time)
+                .date(request.date())
+                .user(user)
                 .build();
 
-        return scheduleRepository.save(schedule);
+        scheduleRepository.save(schedule);
     }
 
-    // 일정 조회
-    public List<Schedule> getSchedules(Long userId) {
-        return scheduleRepository.findAllByUserId(userId);
+    @Transactional(readOnly = true)
+    public ScheduleListResponse getScheduleList(Long userId, LocalDate time){
+        User user = findUserOrThrow(userId);
+
+        List<Schedule> scheduleList = scheduleRepository.findAllByUserIdAndDate(userId, time);
+        List<ScheduleItemResponse> scheduleItemResponseList = scheduleList.stream()
+                .map(ScheduleItemResponse::from)
+                .collect(Collectors.toList());
+
+        return ScheduleListResponse.from(scheduleItemResponseList);
     }
 
-    // 일정 수정
-    public Schedule update(Long id, ScheduleUpdateRequest request) {
-        Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("일정을 찾을 수 없습니다."));
-
-        schedule.setDate(request.getDate());
-        schedule.setTime(request.getTime());
-        schedule.setName(request.getName());
-
-        return scheduleRepository.save(schedule);
-    }
-
-    // 일정 삭제
-    public void delete(Long id) {
-        scheduleRepository.deleteById(id);
+    private User findUserOrThrow(Long userId) {
+        return userRepository.findById(userId).orElseThrow(()-> new UserException(USER_NOT_FOUND));
     }
 }

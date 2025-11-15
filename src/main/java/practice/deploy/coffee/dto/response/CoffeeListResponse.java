@@ -5,7 +5,7 @@ import java.util.List;
 public record CoffeeListResponse(
         List<CoffeeItemResponse> coffeeItemResponseList
 ) {
-    public static CoffeeListResponse from(List<CoffeeItemResponse> coffeeItemResponseList) {
-        return new CoffeeListResponse(coffeeItemResponseList);
+    public static CoffeeListResponse from(List<CoffeeItemResponse> coffeeItemList) {
+        return new CoffeeListResponse(coffeeItemList);
     }
 }
