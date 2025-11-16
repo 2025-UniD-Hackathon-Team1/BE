@@ -90,7 +90,8 @@ public class CoffeeService {
         // 시작/끝 시간
         LocalDateTime firstDrinkDateTime = LocalDateTime.of(today, firstDrinkTime);
         LocalDateTime graphStartTime = firstDrinkDateTime;
-        LocalDateTime graphEndTime = currentTime;
+        // 오늘 밤 24시(자정) 전까지 그래프 생성
+        LocalDateTime graphEndTime = today.atTime(23, 59);
 
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
